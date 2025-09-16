@@ -17,7 +17,7 @@ define( 'BP_REGISTRATION_OPTIONS_VERSION', '4.5.0' );
  */
 function bp_registration_options_init() {
 
-	$bp = '';
+	$bp  = '';
 	$bbp = '';
 
 	// Not using bp_includes because we want to be able to be run with just bbPress as well.
@@ -30,8 +30,8 @@ function bp_registration_options_init() {
 	}
 
 	if ( bp_registration_should_init( $bp, $bbp ) ) {
-		require_once( dirname( __FILE__ ) . '/bp-registration-options.php' );
-		$bp_registration_options = new BP_Registration_Options;
+		require_once dirname( __FILE__ ) . '/bp-registration-options.php';
+		$bp_registration_options = new BP_Registration_Options();
 
 		add_action( 'init', 'bp_registration_options_compat_init' );
 	}
@@ -44,7 +44,7 @@ add_action( 'plugins_loaded', 'bp_registration_options_init' );
  * @since 4.2.8
  */
 function bp_registration_options_compat_init() {
-	return new BP_Registration_Compatibility;
+	return new BP_Registration_Compatibility();
 }
 
 /**
@@ -61,7 +61,7 @@ function bp_registration_options_compat_init() {
 function bp_registration_should_init( $bp = '', $bbp = '' ) {
 
 	$should_init = ( is_object( $bp ) && version_compare( $bp->version, '2.5.0', '>=' ) ) ||
-	               ( is_object( $bbp ) && version_compare( $bbp->version, '2.0.0', '>=' ) );
+		( is_object( $bbp ) && version_compare( $bbp->version, '2.0.0', '>=' ) );
 
 	if ( defined( 'BP_PLATFORM_VERSION' ) ) {
 		$should_init = version_compare( BP_PLATFORM_VERSION, '1.3.5', '>=' );

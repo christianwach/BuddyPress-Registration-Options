@@ -39,17 +39,17 @@ class BP_Registration_Options {
 	 */
 	public function __construct() {
 		// Define plugin constants.
-		$this->version = BP_REGISTRATION_OPTIONS_VERSION;
-		$this->basename = plugin_basename( __FILE__ );
+		$this->version        = BP_REGISTRATION_OPTIONS_VERSION;
+		$this->basename       = plugin_basename( __FILE__ );
 		$this->directory_path = plugin_dir_path( __FILE__ );
 
 		register_activation_hook( __FILE__, array( &$this, 'activate' ) );
 		register_deactivation_hook( __FILE__, array( &$this, 'deactivate' ) );
 
-		require_once( $this->directory_path . 'includes/utility.php' );
-		require_once( $this->directory_path . 'includes/admin.php' );
-		require_once( $this->directory_path . 'includes/core.php' );
-		require_once( $this->directory_path . 'includes/compatibility.php' );
+		require_once $this->directory_path . 'includes/utility.php';
+		require_once $this->directory_path . 'includes/admin.php';
+		require_once $this->directory_path . 'includes/core.php';
+		require_once $this->directory_path . 'includes/compatibility.php';
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 	}

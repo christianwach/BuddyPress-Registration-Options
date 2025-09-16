@@ -51,7 +51,7 @@ class BP_Registration_Compatibility {
 				'user_login' => $user->data->user_login,
 				'user_email' => $user->data->user_email,
 				'message'    => sprintf(
-					__( '%s ( %s ) would like to become a member of your website. To accept or reject their request, please go to <a href="%s">%s</a>.', 'bp-registration-options' ),
+					__( '%1$s ( %2$s ) would like to become a member of your website. To accept or reject their request, please go to <a href="%3$s">%4$s</a>.', 'bp-registration-options' ),
 					$user->data->user_nicename,
 					$user->data->user_email,
 					admin_url( '/admin.php?page=bp_registration_options_member_requests' ),
@@ -67,7 +67,7 @@ class BP_Registration_Compatibility {
 	 */
 	public function buddypress_like() {
 
-		$user = get_current_user_id();
+		$user     = get_current_user_id();
 		$moderate = (bool) get_option( 'bprwg_moderate' );
 
 		if ( empty( $moderate ) || ! $moderate ) {
@@ -78,13 +78,13 @@ class BP_Registration_Compatibility {
 			return;
 		}
 
-		remove_filter( 'bp_activity_entry_meta' , 'bp_like_button', 1000 );
-		remove_filter( 'bp_activity_comment_options' , 'bp_like_button', 1000 );
-		remove_action( 'bp_before_blog_single_post' , 'bp_like_button' , 1000 );
+		remove_filter( 'bp_activity_entry_meta', 'bp_like_button', 1000 );
+		remove_filter( 'bp_activity_comment_options', 'bp_like_button', 1000 );
+		remove_action( 'bp_before_blog_single_post', 'bp_like_button', 1000 );
 
-		remove_action( 'bp_activity_filter_options' , 'bp_like_activity_filter' );
-		remove_action( 'bp_group_activity_filter_options' , 'bp_like_activity_filter' );
-		remove_action( 'bp_member_activity_filter_options' , 'bp_like_activity_filter' );
+		remove_action( 'bp_activity_filter_options', 'bp_like_activity_filter' );
+		remove_action( 'bp_group_activity_filter_options', 'bp_like_activity_filter' );
+		remove_action( 'bp_member_activity_filter_options', 'bp_like_activity_filter' );
 
 		remove_action( 'bp_setup_nav', 'invite_anyone_setup_nav' );
 	}
@@ -95,7 +95,7 @@ class BP_Registration_Compatibility {
 	 */
 	public function buddypress_send_invites() {
 
-		$user = get_current_user_id();
+		$user     = get_current_user_id();
 		$moderate = (bool) get_option( 'bprwg_moderate' );
 
 		if ( empty( $moderate ) || ! $moderate ) {
@@ -131,10 +131,10 @@ class BP_Registration_Compatibility {
 
 		// Do not allow these actions.
 		switch ( $cap ) {
-			case 'bp_docs_create' :
-			case 'bp_docs_edit' :
-			case 'bp_docs_manage' :
-			case 'bp_docs_post_comments' :
+			case 'bp_docs_create':
+			case 'bp_docs_edit':
+			case 'bp_docs_manage':
+			case 'bp_docs_post_comments':
 				$caps = array( 'do_not_allow' );
 				break;
 		}
@@ -143,6 +143,11 @@ class BP_Registration_Compatibility {
 	}
 }
 
+/**
+ * Removes all traces of BP Better Messages for moderated Users.
+ *
+ * @since 4.3.0
+ */
 function bp_registration_remove_bp_better_messages() {
 	if ( ! class_exists( 'BP_Better_Messages' ) ) {
 		return;
@@ -163,11 +168,15 @@ function bp_registration_remove_bp_better_messages() {
 
 	// Grab all the available shortcodes and "null" them out for moderated users only.
 	global $shortcode_tags;
-	$bp_better_messages = array_filter( $shortcode_tags, function ( $shortcode_value, $shortcode_key ) {
-		return 0 === strpos( $shortcode_key, 'bp_better' );
-	}, ARRAY_FILTER_USE_BOTH );
+	$bp_better_messages = array_filter(
+		$shortcode_tags,
+		function ( $shortcode_value, $shortcode_key ) {
+			return 0 === strpos( $shortcode_key, 'bp_better' );
+		},
+		ARRAY_FILTER_USE_BOTH
+	);
 
-	foreach( $bp_better_messages as $tag => $shortcode ) {
+	foreach ( $bp_better_messages as $tag => $shortcode ) {
 		// Unregister and then re-register with a different callback.
 		remove_shortcode( $tag );
 		add_shortcode( $tag, '__return_empty_string' );

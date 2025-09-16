@@ -14,12 +14,18 @@
  */
 function bp_registration_get_pending_user_count() {
 
-	if ( false === ( $rs = get_transient( 'bpro_user_count' ) ) ) {
+	$rs = get_transient( 'bpro_user_count' );
+	if ( false === $rs ) {
 		global $wpdb;
 
-		$sql = "SELECT count( user_id ) AS count FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value = %s";
-
-		$rs = $wpdb->get_col( $wpdb->prepare( $sql, '_bprwg_is_moderated', 'true' ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rs = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT count( user_id ) AS count FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value = %s",
+				'_bprwg_is_moderated',
+				'true'
+			)
+		);
 
 		if ( ! empty( $rs ) ) {
 			set_transient( 'bpro_user_count', $rs, 60 * 5 );
@@ -40,17 +46,22 @@ function bp_registration_get_pending_user_count() {
 function bp_registration_get_pending_users( $start_from = 0 ) {
 	global $wpdb;
 
-	$sql = "
-		SELECT u.ID AS user_id
-		FROM {$wpdb->users} AS u
-		INNER JOIN {$wpdb->usermeta} AS um
-		WHERE u.ID = um.user_id
-		AND um.meta_key = %s
-		AND meta_value = %s
-		ORDER BY u.user_registered
-		LIMIT %d, 20";
-
-	$results = $wpdb->get_results( $wpdb->prepare( $sql, '_bprwg_is_moderated', 'true', $start_from ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$results = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT u.ID AS user_id
+			FROM {$wpdb->users} AS u
+			INNER JOIN {$wpdb->usermeta} AS um
+			WHERE u.ID = um.user_id
+			AND um.meta_key = %s
+			AND meta_value = %s
+			ORDER BY u.user_registered
+			LIMIT %d, 20",
+			'_bprwg_is_moderated',
+			'true',
+			$start_from
+		)
+	);
 
 	/**
 	 * Filters the results of the pending users.
@@ -61,7 +72,7 @@ function bp_registration_get_pending_users( $start_from = 0 ) {
 	 */
 	$results = apply_filters( 'bpro_hook_get_pending_users', $results );
 
-	return ( ! empty( $results ) ) ? $results : array();
+	return empty( $results ) ? array() : $results;
 }
 
 /**
@@ -168,18 +179,20 @@ function bp_registration_options_form_actions() {
 			bp_registration_delete_ip_addresses();
 		}
 
+		//phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		bp_registration_handle_general_settings(
 			array(
-				'set_moderate'          => empty( $_POST['bp_moderate'] ) ? '' : $_POST['bp_moderate'],
-				'set_private'           => empty( $_POST['privacy_network'] ) ? '' : $_POST['privacy_network'],
-				'enable_notifications'  => empty( $_POST['enable_notifications'] ) ? '' : $_POST['enable_notifications'],
-				'activate_message'      => empty( $_POST['activate_message'] ) ? '' : $_POST['activate_message'],
-				'approved_message'      => empty( $_POST['approved_message'] ) ? '' : $_POST['approved_message'],
-				'denied_message'        => empty( $_POST['denied_message'] ) ? '' : $_POST['denied_message'],
-				'admin_pending_message' => empty( $_POST['admin_pending_message'] ) ? '' : $_POST['admin_pending_message'],
-				'user_pending_message'  => empty( $_POST['user_pending_message'] ) ? '' : $_POST['user_pending_message'],
+				'set_moderate'          => empty( $_POST['bp_moderate'] ) ? '' : wp_unslash( $_POST['bp_moderate'] ),
+				'set_private'           => empty( $_POST['privacy_network'] ) ? '' : wp_unslash( $_POST['privacy_network'] ),
+				'enable_notifications'  => empty( $_POST['enable_notifications'] ) ? '' : wp_unslash( $_POST['enable_notifications'] ),
+				'activate_message'      => empty( $_POST['activate_message'] ) ? '' : wp_unslash( $_POST['activate_message'] ),
+				'approved_message'      => empty( $_POST['approved_message'] ) ? '' : wp_unslash( $_POST['approved_message'] ),
+				'denied_message'        => empty( $_POST['denied_message'] ) ? '' : wp_unslash( $_POST['denied_message'] ),
+				'admin_pending_message' => empty( $_POST['admin_pending_message'] ) ? '' : wp_unslash( $_POST['admin_pending_message'] ),
+				'user_pending_message'  => empty( $_POST['user_pending_message'] ) ? '' : wp_unslash( $_POST['user_pending_message'] ),
 			)
 		);
+		//phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 
 	if ( isset( $_POST['reset_messages'] ) ) {
@@ -194,20 +207,26 @@ function bp_registration_options_form_actions() {
 
 		check_admin_referer( 'bp_reg_options_check' );
 
-		$action = sanitize_text_field( $_POST['moderate'] );
+		$action = sanitize_text_field( wp_unslash( $_POST['moderate'] ) );
 
 		$checked_members = array();
 		$send            = false;
 		$subject         = '';
 		$default_message = '';
 
-		if ( isset( $_POST['bp_member_check'] ) ) {
-			$checked_members = $_POST['bp_member_check'];
-		}
-
+		// Get array from POST.
+		$checked_members = filter_input( INPUT_POST, 'bp_member_check', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
 		if ( ! is_array( $checked_members ) ) {
 			$checked_members = array( $checked_members );
 		}
+
+		// Make sure array contains integers.
+		array_walk(
+			$checked_members,
+			function( &$item ) {
+				$item = (int) trim( $item );
+			}
+		);
 
 		if ( 'deny' === $action ) {
 			$send            = true;
@@ -229,14 +248,14 @@ function bp_registration_options_form_actions() {
 			if ( 'deny' === $action || 'ban' === $action ) {
 
 				/*
-				 // Add our user to the IP ban option.
-				 if ( 'Ban' == $action ) {
+				// Add our user to the IP ban option.
+				if ( 'Ban' == $action ) {
 
-					$blockedIPs = get_option( 'bprwg_blocked_ips', array() );
+					$blocked_ips = get_option( 'bprwg_blocked_ips', array() );
 					$blockedemails = get_option( 'bprwg_blocked_emails', array() );
-					$blockedIPs[] = get_user_meta( $user_id, 'bprwg_ip_address', true);
+					$blocked_ips[] = get_user_meta( $user_id, 'bprwg_ip_address', true);
 					$blockedemails[] = $user->data->user_email;
-					$successIP = update_option( 'bprwg_blocked_ips', $blockedIPs );
+					$successIP = update_option( 'bprwg_blocked_ips', $blocked_ips );
 					$successEmail = update_option( 'bprwg_blocked_emails', $blockedemails );
 				}
 				*/
@@ -295,7 +314,7 @@ function bp_registration_options_form_actions() {
 				$message = str_replace( '[user_email]', $user->data->user_email, $message );
 
 				$message = bp_registration_process_email_message( $message, false, $action . '_user', $user_id );
-				$mailme = array(
+				$mailme  = array(
 					'user_email'   => $user->data->user_email,
 					'user_subject' => $subject,
 					'user_message' => $message,
@@ -341,7 +360,7 @@ function bp_registration_options_admin_messages() {
 
 	$member_requests = bp_registration_get_pending_user_count();
 
-	if ( $member_requests > 0 && isset( $_GET['page'] ) != 'bp_registration_options_member_requests' && current_user_can( 'add_users' ) ) {
+	if ( $member_requests > 0 && isset( $_GET['page'] ) !== 'bp_registration_options_member_requests' && current_user_can( 'add_users' ) ) {
 
 		$message = '<div class="error"><p>';
 
@@ -356,16 +375,17 @@ function bp_registration_options_admin_messages() {
 		);
 		$message .= ' ' . sprintf(
 			/* translators: placeholder will have linked "click here" that goes to requests page. */
-			__( 'Please %s to take action', 'bp-registration-options' ),
+			esc_html__( 'Please %s to take action', 'bp-registration-options' ),
 			sprintf(
 				'<a href="%s">%s</a>',
 				admin_url( '/admin.php?page=bp_registration_options_member_requests' ),
-				__( 'click here', 'bp-registration-options' )
+				esc_html__( 'click here', 'bp-registration-options' )
 			)
 		);
 
 		$message .= '</p></div>';
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $message;
 	}
 }
@@ -424,23 +444,29 @@ function bp_registration_options_plugin_menu() {
 		'bp_registration_options_member_requests'
 	);
 
-	/*add_submenu_page(
+	/*
+	// Disabled subpage.
+	add_submenu_page(
 		'bp_registration_options',
 		__( 'Banned Sources', 'bp-registration-options' ),
 		__( 'Banned Sources', 'bp-registration-options' ),
 		$minimum_cap,
 		'bp_registration_options_banned',
 		'bp_registration_options_banned'
-	);*/
+	);
+	*/
 
-	/*add_submenu_page(
+	/*
+	// Disabled subpage.
+	add_submenu_page(
 		'bp_registration_options',
 		__( 'Help / Support', 'bp-registration-options' ),
 		__( 'Help / Support', 'bp-registration-options' ),
 		$minimum_cap,
 		'bp_registration_options_help_support',
 		'bp_registration_options_help_support'
-	);*/
+	);
+	*/
 }
 add_action( 'admin_menu', 'bp_registration_options_plugin_menu' );
 
@@ -457,12 +483,13 @@ function bp_registration_options_tab_menu( $page = '' ) {
 
 	<h1><?php esc_html_e( 'BP Registration Options', 'bp-registration-options' ); ?></h1>
 	<h2 class="nav-tab-wrapper">
-	<a class="nav-tab<?php if ( ! $page ) { echo ' nav-tab-active'; } ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options' ) ); ?>"><?php esc_html_e( 'General Settings', 'bp-registration-options' ); ?></a>
-	<a class="nav-tab<?php if ( 'requests' === $page ) { echo ' nav-tab-active'; } ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options_member_requests' ) ); ?>"><?php _e( 'Member Requests', 'bp-registration-options' ); ?> (<?php echo $member_requests;?>)</a>
-	<?php // <a class="nav-tab<?php if ( $page == 'banned' ) echo ' nav-tab-active';?" <?php //href="<?php echo admin_url( 'admin.php?page=bp_registration_options_banned' ); ?"><?php //_e( 'Banned', 'bp-registration-options' ); </a>?>
-	<?php // <a class="nav-tab<?php if ( 'help' === $page ) { echo ' nav-tab-active'; } ?><?php //" href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options_help_support' ) ); "><?php esc_html_e( 'Help / Support', 'bp-registration-options' ); //</a> ?>
+	<a class="nav-tab<?php echo empty( $page ) ? ' nav-tab-active' : ''; ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options' ) ); ?>"><?php esc_html_e( 'General Settings', 'bp-registration-options' ); ?></a>
+	<a class="nav-tab<?php echo esc_attr( ( 'requests' === $page ) ? ' nav-tab-active' : '' ); ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options_member_requests' ) ); ?>"><?php esc_html_e( 'Member Requests', 'bp-registration-options' ); ?> (<?php echo esc_html( $member_requests ); ?>)</a>
+	<?php /* <a class="nav-tab<?php if ( $page == 'banned' ) echo ' nav-tab-active';?" <?php //href="<?php echo admin_url( 'admin.php?page=bp_registration_options_banned' ); ?"><?php //_e( 'Banned', 'bp-registration-options' ); </a> */ ?>
+	<?php /* <a class="nav-tab<?php if ( 'help' === $page ) { echo ' nav-tab-active'; } ?><?php // " href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options_help_support' ) ); "><?php esc_html_e( 'Help / Support', 'bp-registration-options' ); //</a> */ ?>
 	</h2>
-<?php }
+	<?php
+}
 
 /**
  * Options page for settings and messages to use
@@ -537,7 +564,8 @@ function bp_registration_options_settings() {
 			 *
 			 * @since 4.2.0
 			 */
-			do_action( 'bpro_hook_before_general_settings_form' ); ?>
+			do_action( 'bpro_hook_before_general_settings_form' );
+			?>
 
 			<p>
 				<input type="checkbox" id="bp_moderate" name="bp_moderate" value="1" <?php checked( $bp_moderate, '1' ); ?>/>
@@ -577,6 +605,7 @@ function bp_registration_options_settings() {
 						<label for="activate_message"><?php esc_html_e( 'Activate & Profile Alert Message:', 'bp-registration-options' ); ?></label>
 					</td>
 					<td>
+						<?php /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
 						<textarea id="activate_message" name="activate_message"><?php echo stripslashes( $activate_message ); ?></textarea>
 					</td>
 				</tr>
@@ -585,7 +614,8 @@ function bp_registration_options_settings() {
 						<label for="approved_message"><?php esc_html_e( 'Account Approved Email:', 'bp-registration-options' ); ?></label>
 					</td>
 					<td>
-						<textarea id="approved_message" name="approved_message"><?php echo stripslashes( $approved_message );?></textarea>
+						<?php /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
+						<textarea id="approved_message" name="approved_message"><?php echo stripslashes( $approved_message ); ?></textarea>
 					</td>
 				</tr>
 				<tr>
@@ -593,7 +623,8 @@ function bp_registration_options_settings() {
 						<label for="denied_message"><?php esc_html_e( 'Account Denied Email:', 'bp-registration-options' ); ?></label>
 					</td>
 					<td>
-						<textarea id="denied_message" name="denied_message"><?php echo stripslashes( $denied_message );?></textarea>
+						<?php /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
+						<textarea id="denied_message" name="denied_message"><?php echo stripslashes( $denied_message ); ?></textarea>
 					</td>
 				</tr>
 				<tr>
@@ -601,7 +632,8 @@ function bp_registration_options_settings() {
 						<label for="admin_pending_message"><?php esc_html_e( 'Admin Pending Email Message:', 'bp-registration-options' ); ?></label>
 					</td>
 					<td>
-						<textarea id="admin_pending_message" name="admin_pending_message"><?php echo stripslashes( $admin_pending_message );?></textarea>
+						<?php /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
+						<textarea id="admin_pending_message" name="admin_pending_message"><?php echo stripslashes( $admin_pending_message ); ?></textarea>
 					</td>
 				</tr>
 				<tr>
@@ -609,7 +641,8 @@ function bp_registration_options_settings() {
 						<label for="user_pending_message"><?php esc_html_e( 'User Pending Email Message:', 'bp-registration-options' ); ?></label>
 					</td>
 					<td>
-						<textarea id="user_pending_message" name="user_pending_message"><?php echo stripslashes( $user_pending_message );?></textarea>
+						<?php /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
+						<textarea id="user_pending_message" name="user_pending_message"><?php echo stripslashes( $user_pending_message ); ?></textarea>
 					</td>
 				</tr>
 				<tr>
@@ -636,13 +669,15 @@ function bp_registration_options_settings() {
 			 *
 			 * @since 4.2.0
 			 */
-			do_action( 'bpro_hook_after_general_settings_form' ); ?>
+			do_action( 'bpro_hook_after_general_settings_form' );
+			?>
 
 			<button class="button button-primary" name="save_general" value="save_general"><?php esc_attr_e( 'Save Options', 'bp-registration-options' ); ?></button>
 		</form>
 	</div>
 
-	<?php bp_registration_options_admin_footer();
+	<?php
+	bp_registration_options_admin_footer();
 }
 
 /**
@@ -651,7 +686,7 @@ function bp_registration_options_settings() {
  * @since unknown
  */
 function bp_registration_options_member_requests() {
-?>
+	?>
 
 	<div class="wrap">
 		<?php
@@ -659,7 +694,8 @@ function bp_registration_options_member_requests() {
 
 		$member_requests = bp_registration_get_pending_user_count();
 
-		if ( $member_requests > 0 ) { ?>
+		if ( $member_requests > 0 ) {
+			?>
 
 			<form method="POST" name="bprwg">
 			<?php
@@ -671,7 +707,8 @@ function bp_registration_options_member_requests() {
 			 */
 			do_action( 'bpro_hook_before_pending_member_list' );
 
-			wp_nonce_field( 'bp_reg_options_check' ); ?>
+			wp_nonce_field( 'bp_reg_options_check' );
+			?>
 
 			<p><?php esc_html_e( 'Please approve or deny the following new members:', 'bp-registration-options' ); ?></p>
 
@@ -693,9 +730,9 @@ function bp_registration_options_member_requests() {
 			$odd = true;
 
 			// Get paged value, determine total pages, and calculate start_from value for offset.
-			$page = ( isset( $_GET['p'] ) ) ? $_GET['p'] : 1;
+			$page        = isset( $_GET['p'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['p'] ) ) : 1;
 			$total_pages = ceil( $member_requests / 20 ); // TODO: Test pagination.
-			$start_from = ( $page - 1 ) * 20;
+			$start_from  = ( $page - 1 ) * 20;
 
 			$pending_users = bp_registration_get_pending_users( $start_from );
 
@@ -706,11 +743,13 @@ function bp_registration_options_member_requests() {
 
 				$user_data = get_userdata( $pending->user_id );
 
-				if ( $odd ) { ?>
+				if ( $odd ) {
+					?>
 					<tr class="alternate">
 					<?php
 					$odd = false;
-				} else { ?>
+				} else {
+					?>
 					<tr>
 					<?php
 					$odd = true;
@@ -722,7 +761,7 @@ function bp_registration_options_member_requests() {
 					<td>
 						<?php if ( isset( $user ) ) { ?>
 							<a target="_blank" href="<?php echo esc_attr( $user->user_url ); ?>">
-								<?php echo $user->avatar_mini; ?>
+								<?php echo $user->avatar_mini; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
 							</a>
 						<?php } ?>
 					</td>
@@ -731,23 +770,25 @@ function bp_registration_options_member_requests() {
 							<strong><a target="_blank" href="<?php echo esc_attr( $user->user_url ); ?>">
 								<?php
 								if ( ! empty( $user->fullname ) ) {
-									echo $user->fullname;
+									echo esc_html( $user->fullname );
 								} else {
-									echo $user->profile_data['user_login'];
+									echo esc_html( $user->profile_data['user_login'] );
 								}
 								?>
 							</a></strong>
-						<?php } else {
-							echo $user_data->user_login;
-						} ?>
+							<?php
+						} else {
+							echo esc_html( $user_data->user_login );
+						}
+						?>
 					</td>
 					<td>
-						<a href="mailto:<?php echo $user_data->data->user_email;?>">
-							<?php echo $user_data->data->user_email; ?>
+						<a href="mailto:<?php echo esc_attr( $user_data->data->user_email ); ?>">
+							<?php echo esc_html( $user_data->data->user_email ); ?>
 						</a>
 					</td>
 					<td>
-						<?php echo $user_data->data->user_registered; ?>
+						<?php echo $user_data->data->user_registered; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
 					</td>
 					<td>
 						<?php
@@ -759,7 +800,8 @@ function bp_registration_options_member_requests() {
 						 *
 						 * @param int $value Pending user ID.
 						 */
-						do_action( 'bpro_hook_member_item_additional_data', $pending->user_id ); ?>
+						do_action( 'bpro_hook_member_item_additional_data', $pending->user_id );
+						?>
 					</td>
 				</tr>
 				<?php
@@ -790,17 +832,18 @@ function bp_registration_options_member_requests() {
 			<?php /*<button class="button button-secondary" name="moderate" value="ban" id="bpro_ban" disabled><?php esc_html_e( 'Ban', 'bp-registration-options' ); </button> */ ?>
 			</p>
 
-			<?php if ( $total_pages > 1 ) {
-				$current = ( ! empty( $_GET['p'] ) ) ? $_GET['p'] : 1;
+			<?php
+			if ( $total_pages > 1 ) {
+				$current = ! empty( $_GET['p'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['p'] ) ) : 1;
 				echo '<p>' . esc_html__( 'Pagination: ', 'bp-registration-options' );
 				for ( $i = 1; $i <= $total_pages; $i++ ) {
-					$classes = ( $i == $current ) ? 'bpro_pagination bpro_current wp-ui-highlight' : 'bpro_pagination';
+					$classes = ( $i === $current ) ? 'bpro_pagination bpro_current wp-ui-highlight' : 'bpro_pagination';
 					$classes = 'class="' . $classes . '"';
 					printf(
 						'<a href="%s" %s>%s</a> ',
 						esc_url( add_query_arg( 'p', $i ) ),
-						$classes,
-						$i
+						$classes, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						esc_html( $i )
 					);
 				}
 				echo '</p>';
@@ -811,11 +854,13 @@ function bp_registration_options_member_requests() {
 			 *
 			 * @since 4.2.0
 			 */
-			do_action( 'bpro_hook_after_pending_member_list' ); ?>
+			do_action( 'bpro_hook_after_pending_member_list' );
+			?>
 
 			</form>
 
-		<?php } else {
+			<?php
+		} else {
 			echo '<p><strong>' . esc_html__( 'No new members to approve.', 'bp-registration-options' ) . '</strong></p>';
 		}
 		?>
@@ -836,10 +881,11 @@ function bp_registration_options_banned() {
 
 	bp_registration_options_tab_menu( 'banned' );
 
-	$blockedIPs = get_option( 'bprwg_blocked_ips' );
+	$blocked_ips   = get_option( 'bprwg_blocked_ips' );
 	$blockedemails = get_option( 'bprwg_blocked_emails' );
 
-	if ( ! empty( $blockedIPs ) || ! empty( $blockedemails ) ) { ?>
+	if ( ! empty( $blocked_ips ) || ! empty( $blockedemails ) ) {
+		?>
 
 		<h3><?php esc_html_e( 'The following IP addresses are currently banned.', 'bp-registration-options' ); ?></h3>
 		<table class="widefat">
@@ -855,18 +901,18 @@ function bp_registration_options_banned() {
 
 		$odd = true;
 
-		foreach ( $blockedIPs as $IP ) {
+		foreach ( $blocked_ips as $ip ) {
 			if ( $odd ) {
 				$attributes = ' class="alternate"';
-				$odd = false;
+				$odd        = false;
 			} else {
 				$attributes = '';
-				$odd = true;
+				$odd        = true;
 			}
 			?>
-			<tr<?php echo $attributes; ?>>
-			<th class="check-column" scope="row"><label><input type="checkbox" class="bpro_checkbox" id="bp_blocked_check_<?php echo $IP; ?>" name="bp_blockedip_check[]" value="<?php echo esc_attr( $IP ); ?>"  /></label></th>
-			<td><?php echo esc_html( $IP ); ?></a></td>
+			<tr<?php echo $attributes; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
+			<th class="check-column" scope="row"><label><input type="checkbox" class="bpro_checkbox" id="bp_blocked_check_<?php echo esc_attr( $ip ); ?>" name="bp_blockedip_check[]" value="<?php echo esc_attr( $ip ); ?>"  /></label></th>
+			<td><?php echo esc_html( $ip ); ?></a></td>
 			</tr>
 		<?php } ?>
 		<tfoot>
@@ -890,23 +936,17 @@ function bp_registration_options_banned() {
 				<th><?php esc_html_e( 'Email Address', 'bp-registration-options' ); ?></th>
 			</tr>
 		</thead>
-		<?php
-
-		$odd = true;
-
-		foreach ( $blockedemails as $email ) {
-			if ( $odd ) { ?>
+		<?php $odd = true; ?>
+		<?php foreach ( $blockedemails as $email ) { ?>
+			<?php if ( $odd ) { ?>
 				<tr class="alternate">
-				<?php
-				$odd = false;
-			} else { ?>
+				<?php $odd = false; ?>
+			<?php } else { ?>
 				<tr>
-				<?php
-				$odd = true;
-			}
-			?>
-			<th class="check-column" scope="row"><label><input type="checkbox" class="bpro_checkbox" id="bp_member_check_<?php echo $user_id; ?>" name="bp_blockedemail_check[]" value=""  /></label></th>
-			<td><?php echo $email; ?></a></td>
+				<?php $odd = true; ?>
+			<?php } ?>
+			<th class="check-column" scope="row"><label><input type="checkbox" class="bpro_checkbox" id="bp_member_check_<?php echo esc_attr( $user_id ); ?>" name="bp_blockedemail_check[]" value="" /></label></th>
+			<td><?php echo esc_html( $email ); ?></a></td>
 			</tr>
 		<?php } ?>
 		<tfoot>
@@ -918,9 +958,10 @@ function bp_registration_options_banned() {
 			</tr>
 		</tfoot>
 		</table>
-		<?php } else {
-			echo '<p><strong>' . esc_html__( 'You have no blocked IP Addresses or Email Addresses at the moment', 'bp-registration-options' ) . '</strong></p>';
-		}
+		<?php
+	} else {
+		echo '<p><strong>' . esc_html__( 'You have no blocked IP Addresses or Email Addresses at the moment', 'bp-registration-options' ) . '</strong></p>';
+	}
 		bp_registration_options_admin_footer();
 }
 
@@ -931,9 +972,10 @@ function bp_registration_options_help_support() {
 	// NEEDS DONE.
 	?>
 	<div class="wrap">
-		<?php bp_registration_options_tab_menu( 'help' );?>
+		<?php bp_registration_options_tab_menu( 'help' ); ?>
 	</div>
-	<?php bp_registration_options_admin_footer();
+	<?php
+	bp_registration_options_admin_footer();
 }
 
 /**
@@ -947,30 +989,30 @@ function bp_registration_options_help_support() {
  */
 function bp_registration_options_admin_footer( $original = '' ) {
 
-    $screen = get_current_screen();
-    if ( ! is_object( $screen ) || 'bp_registration_options' != $screen->parent_base ) {
-        return $original;
-    }
-    return sprintf(
-        __( '%s version %s by %s', 'bp-registration-options' ),
-        sprintf(
-            '<a target="_blank" href="https://wordpress.org/support/plugin/bp-registration-options">%s</a>',
-            __( 'BP Registration Options', 'bp-registration-options' )
-        ),
-        BP_REGISTRATION_OPTIONS_VERSION,
-        '<a href="https://apppresser.com/" target="_blank">AppPresser</a>'
-    ).
-    ' - '.
-    sprintf(
-        '<a href="https://wordpress.org/support/plugin/bp-registration-options" target="_blank">%s</a>',
-        __( 'Please Report Bugs', 'bp-registration-options' )
-    ).
-    ' '.
-    __( 'Follow on Twitter:', 'bp-registration-options' ).
-    sprintf(
-        ' %s',
-        '<a href="http://twitter.com/bmess" target="_blank">Brian</a>',
-    );
+	$screen = get_current_screen();
+	if ( ! is_object( $screen ) || 'bp_registration_options' !== $screen->parent_base ) {
+		return $original;
+	}
+	return sprintf(
+		__( '%1$s version %2$s by %3$s', 'bp-registration-options' ),
+		sprintf(
+			'<a target="_blank" href="https://wordpress.org/support/plugin/bp-registration-options">%s</a>',
+			__( 'BP Registration Options', 'bp-registration-options' )
+		),
+		BP_REGISTRATION_OPTIONS_VERSION,
+		'<a href="https://apppresser.com/" target="_blank">AppPresser</a>'
+	) .
+	' - ' .
+	sprintf(
+		'<a href="https://wordpress.org/support/plugin/bp-registration-options" target="_blank">%s</a>',
+		__( 'Please Report Bugs', 'bp-registration-options' )
+	) .
+	' ' .
+	__( 'Follow on Twitter:', 'bp-registration-options' ) .
+	sprintf(
+		' %s',
+		'<a href="http://twitter.com/bmess" target="_blank">Brian</a>',
+	);
 
 }
 add_filter( 'admin_footer_text', 'bp_registration_options_admin_footer' );
@@ -989,6 +1031,7 @@ function bp_registration_options_css() {
 	 */
 	$styles = apply_filters( 'bpro_hook_admin_styles', '' );
 	if ( ! empty( $styles ) ) {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '<style>' . $styles . '</style>';
 	}
 }
@@ -1000,7 +1043,13 @@ add_action( 'admin_head', 'bp_registration_options_css' );
  * @since 4.2.0
  */
 function bp_registration_options_stylesheet() {
-	wp_enqueue_style( 'bp-registration-options-stylesheet', plugins_url( 'assets/bp-registration-options.css', dirname( __FILE__ ) ) );
+	wp_enqueue_style(
+		'bp-registration-options-stylesheet',
+		plugins_url( 'assets/bp-registration-options.css', dirname( __FILE__ ) ),
+		array(),
+		BP_REGISTRATION_OPTIONS_VERSION,
+		'all'
+	);
 }
 add_action( 'admin_enqueue_scripts', 'bp_registration_options_stylesheet' );
 
@@ -1040,7 +1089,7 @@ function bp_registration_options_js() {
 			});
 		})(jQuery);
 	</script>
-<?php
+	<?php
 }
 add_action( 'admin_footer', 'bp_registration_options_js' );
 
@@ -1081,7 +1130,7 @@ add_action( 'deleted_user', 'bp_registration_options_delete_user_count_transient
  * @param int $user_id ID of the user being listed.
  */
 function bp_registration_options_ip_data( $user_id ) {
-	$userip = trim( get_user_meta( $user_id, '_bprwg_ip_address', true ) );
+	$userip   = trim( get_user_meta( $user_id, '_bprwg_ip_address', true ) );
 	$response = wp_remote_get( 'https://freegeoip.app/json/' . $userip );
 
 	if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
@@ -1103,11 +1152,13 @@ function bp_registration_options_ip_data( $user_id ) {
 			?>
 			</div>
 		</div>
-	<?php
+		<?php
 	} else {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo wpautop( $userip );
-	} ?>
-<?php
+	}
+	?>
+	<?php
 }
 add_action( 'bpro_hook_member_item_additional_data', 'bp_registration_options_ip_data', 10, 1 );
 
@@ -1161,7 +1212,7 @@ function bp_registration_options_custom_columns( $column_output = '', $column = 
 	}
 	return $column_output;
 }
-add_filter( 'manage_users_custom_column' , 'bp_registration_options_custom_columns', 10, 3 );
+add_filter( 'manage_users_custom_column', 'bp_registration_options_custom_columns', 10, 3 );
 
 /**
  * Filters and sets our orderby parameters for user sorting by pending status.
@@ -1172,15 +1223,15 @@ add_filter( 'manage_users_custom_column' , 'bp_registration_options_custom_colum
  */
 function bp_registration_options_set_user_sort_order( $query ) {
 
-   $orderby = $query->get( 'orderby' );
+	$orderby = $query->get( 'orderby' );
 
-   if ( ! empty( $orderby ) ) {
+	if ( ! empty( $orderby ) ) {
 
 		if ( 'bpro_pending' === $orderby ) {
 			$query->set( 'meta_key', '_bprwg_is_moderated' );
 			$query->set( 'orderby', 'meta_value' );
 		}
-   }
+	}
 }
 add_action( 'pre_get_users', 'bp_registration_options_set_user_sort_order' );
 
@@ -1193,7 +1244,7 @@ add_action( 'pre_get_users', 'bp_registration_options_set_user_sort_order' );
  * @return array
  */
 function bp_registration_options_make_pending_status_sortable( $sortable_columns ) {
-	$sortable_columns[ 'bpro_pending' ] = 'bpro_pending';
+	$sortable_columns['bpro_pending'] = 'bpro_pending';
 	return $sortable_columns;
 }
 add_filter( 'manage_users_sortable_columns', 'bp_registration_options_make_pending_status_sortable' );
