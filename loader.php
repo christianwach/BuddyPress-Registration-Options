@@ -1,16 +1,25 @@
 <?php
 /**
- * Plugin Name: Registration Options for BuddyPress
- * Description: Prevent users and bots from accessing the BuddyPress or bbPress areas of your website(s) until they are approved.
- * Version:     4.5.0
- * Author:      Brian Messenlehner
- * Licence:     GPLv3
- * Text Domain: bp-registration-options
+ * Registration Options for BuddyPress
+ *
+ * Plugin Name:       Registration Options for BuddyPress
+ * Description:       Prevent users and bots from accessing the BuddyPress or bbPress areas of your website(s) until they are approved.
+ * Plugin URI:        https://github.com/christianwach/bp-registration-options
+ * GitHub Plugin URI: https://github.com/christianwach/bp-registration-options
+ * Version:           4.5.0a
+ * Author:            Brian Messenlehner
+ * Author URI:        https://apppresser.com/brian-messenlehner/
+ * Licence:           GPLv3
+ * Licence URI:       https://www.gnu.org/licenses/gpl-3.0.en.html
+ * Requires at least: 5.2
+ * Requires PHP:      5.6
+ * Text Domain:       bp-registration-options
+ * Domain Path:       /languages
  *
  * @package BP-Registration-Options
  */
 
-define( 'BP_REGISTRATION_OPTIONS_VERSION', '4.5.0' );
+define( 'BP_REGISTRATION_OPTIONS_VERSION', '4.5.0a' );
 
 /**
  * Loads BP Registration Options files only if BuddyPress is present.

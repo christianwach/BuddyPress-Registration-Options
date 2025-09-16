@@ -1,13 +1,16 @@
 === Registration Options for BuddyPress ===
-Contributors: messenlehner
-Tags: buddypress, plugin, admin, moderation, registration, groups, blogs, new members, buddypress private network, buddypress spam
+Contributors:      messenlehner, needle
+Tags:              buddypress, plugin, admin, moderation, registration, groups, blogs, new members, buddypress private network, buddypress spam
+Requires PHP:      5.6
 Requires at least: 5.2
-Tested up to: 6.0.1
-Stable tag: 4.5.0
-Requires PHP: 5.6
-License: GPLv2
+Tested up to:      6.0
+Stable tag:        4.5.0a
+License:           GPLv3
+License URI:       https://www.gnu.org/licenses/gpl-3.0.en.html
 
 Moderate new BuddyPress members and fight BuddyPress spam.
+
+
 
 == Description ==
 
@@ -20,6 +23,8 @@ Requires BuddyPress version 1.7 or higher and bbPress 2.0 or higher.
 === General Data Protection Regulation ===
 BuddyPress Registration Options temporarily stores user IP addresses as user meta to help validate and vet pending users. Saved IP values are deleted upon both approval and denial of pending user. No other personal data is recorded.
 
+
+
 == Screenshots ==
 
 1. General Settings page:
@@ -28,6 +33,8 @@ BuddyPress Registration Options temporarily stores user IP addresses as user met
 4. Admin receives email notice of new member:
 5. Admin Dashboard Alert:
 6. Approve, deny or ban new members:
+
+
 
 == Changelog ==
 
@@ -119,6 +126,8 @@ BuddyPress Registration Options temporarily stores user IP addresses as user met
 * Fixed: Internationalization issues with singular/plural "members" admin notice.
 * Updated: Internationalization strings for default messages.
 
+
+
 == Upgrade Notice ==
 
 = 4.4.4 =
@@ -206,8 +215,9 @@ BuddyPress Registration Options temporarily stores user IP addresses as user met
 * Fixed: Internationalization issues with singular/plural "members" admin notice.
 * Updated: Internationalization strings for default messages.
 
-== Installation ==
 
+
+== Installation ==
 
 1. Upload the bp-registration-options folder to the plugins directory in your WPMU installation
 
