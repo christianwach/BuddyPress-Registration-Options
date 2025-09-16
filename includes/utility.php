@@ -27,6 +27,7 @@ function bp_registration_is_current_user_pending( $user_id = 0 ) {
 	}
 
 	return $pending;
+
 }
 
 /**
@@ -35,6 +36,7 @@ function bp_registration_is_current_user_pending( $user_id = 0 ) {
  * @return bool True if registration is moderated, false otherwise.
  */
 function bp_registration_is_moderated() {
+
 	$moderate = get_option( 'bprwg_moderate' );
 
 	if ( empty( $moderate ) || ! $moderate ) {
@@ -42,6 +44,7 @@ function bp_registration_is_moderated() {
 	}
 
 	return true;
+
 }
 
 /**
@@ -50,6 +53,7 @@ function bp_registration_is_moderated() {
  * @return bool True if the network is private, false otherwise.
  */
 function bp_registration_is_private_network() {
+
 	$private_network = get_option( 'bprwg_privacy_network' );
 
 	if ( empty( $private_network ) || ! $private_network ) {
@@ -57,6 +61,7 @@ function bp_registration_is_private_network() {
 	}
 
 	return true;
+
 }
 
 /**
@@ -69,6 +74,7 @@ function bp_registration_is_private_network() {
  * @return WP_User_Query User query.
  */
 function bp_registration_get_user_ip_query() {
+
 	$args = array(
 		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		'meta_query' => array(
@@ -85,6 +91,7 @@ function bp_registration_get_user_ip_query() {
 	);
 
 	return new WP_User_Query( $args );
+
 }
 
 /**
@@ -95,9 +102,11 @@ function bp_registration_get_user_ip_query() {
  * @return bool
  */
 function bp_registration_has_users_with_ips() {
+
 	$users = bp_registration_get_user_ip_query();
 
 	return ( $users->get_total() > 0 );
+
 }
 
 /**
@@ -106,6 +115,7 @@ function bp_registration_has_users_with_ips() {
  * @since 4.3.5
  */
 function bp_registration_delete_ip_addresses() {
+
 	$users = bp_registration_get_user_ip_query();
 
 	if ( $users->get_total() > 0 ) {
@@ -113,6 +123,7 @@ function bp_registration_delete_ip_addresses() {
 			delete_user_meta( $user_id, '_bprwg_ip_address' );
 		}
 	}
+
 }
 
 /**
@@ -125,9 +136,11 @@ function bp_registration_delete_ip_addresses() {
  * @return string $message The modified message.
  */
 function bp_registration_process_email_message( $message, $do_process, $message_type = '', $moderated_user_id = 0 ) {
+
 	if ( false === apply_filters( 'bprwg_do_wpautop', $do_process, $message_type, $moderated_user_id ) ) {
 		return $message;
 	}
 
 	return wpautop( $message );
+
 }

@@ -33,6 +33,7 @@ function bp_registration_get_pending_user_count() {
 	}
 
 	return ( $rs ) ? $rs[0] : '0';
+
 }
 
 /**
@@ -44,6 +45,7 @@ function bp_registration_get_pending_user_count() {
  * @return array Array of user ID objects or empty array.
  */
 function bp_registration_get_pending_users( $start_from = 0 ) {
+
 	global $wpdb;
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -73,6 +75,7 @@ function bp_registration_get_pending_users( $start_from = 0 ) {
 	$results = apply_filters( 'bpro_hook_get_pending_users', $results );
 
 	return empty( $results ) ? array() : $results;
+
 }
 
 /**
@@ -94,6 +97,7 @@ function bp_registration_handle_reset_messages() {
 	 * @since 4.3.0
 	 */
 	do_action( 'bpro_hook_after_reset_messages' );
+
 }
 
 /**
@@ -161,6 +165,7 @@ function bp_registration_handle_general_settings( $args = array() ) {
 	 * @param array $args Array of inputs that were saved.
 	 */
 	do_action( 'bpro_hook_after_save_settings', $args );
+
 }
 
 /**
@@ -193,12 +198,11 @@ function bp_registration_options_form_actions() {
 			)
 		);
 		//phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
 	}
 
 	if ( isset( $_POST['reset_messages'] ) ) {
-
 		check_admin_referer( 'bp_reg_options_check' );
-
 		bp_registration_handle_reset_messages();
 	}
 
@@ -243,8 +247,10 @@ function bp_registration_options_form_actions() {
 
 			// Assign to a temp variable to use for multiple moderations.
 			$message = $default_message;
+
 			// Grab our userdata object while we still have a user.
 			$user = get_userdata( $user_id );
+
 			if ( 'deny' === $action || 'ban' === $action ) {
 
 				/*
@@ -287,6 +293,7 @@ function bp_registration_options_form_actions() {
 				bp_registration_options_delete_user_count_transient();
 
 			} elseif ( 'approve' === $action ) {
+
 				// Mark as not spam for BuddyPress Registration Options.
 				bp_registration_set_moderation_status( $user_id, 'false' );
 
@@ -335,7 +342,9 @@ function bp_registration_options_form_actions() {
 				wp_mail( $mailme_filtered['user_email'], $mailme_filtered['user_subject'], $mailme_filtered['user_message'] );
 
 				remove_filter( 'wp_mail_content_type', 'bp_registration_options_set_content_type' );
+
 			}
+
 		}
 
 		/**
@@ -347,8 +356,11 @@ function bp_registration_options_form_actions() {
 		 * @param array  $checked_members Array of members that were acted on.
 		 */
 		do_action( 'bpro_after_moderate', $action, $checked_members );
+
 	}
+
 }
+
 add_action( 'admin_init', 'bp_registration_options_form_actions' );
 
 /**
@@ -373,6 +385,7 @@ function bp_registration_options_admin_messages() {
 			),
 			$member_requests
 		);
+
 		$message .= ' ' . sprintf(
 			/* translators: placeholder will have linked "click here" that goes to requests page. */
 			esc_html__( 'Please %s to take action', 'bp-registration-options' ),
@@ -387,8 +400,11 @@ function bp_registration_options_admin_messages() {
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $message;
+
 	}
+
 }
+
 add_action( 'admin_notices', 'bp_registration_options_admin_messages' );
 
 /**
@@ -397,11 +413,12 @@ add_action( 'admin_notices', 'bp_registration_options_admin_messages' );
  * @since unknown
  */
 function bp_registration_options_plugin_menu() {
+
 	global $blog_id;
 
 	$member_requests = bp_registration_get_pending_user_count();
 
-	$capability = ( is_multisite() ) ? 'create_users' : 'delete_users';
+	$capability = is_multisite() ? 'create_users' : 'delete_users';
 
 	/**
 	 * Filters the minimum capability needed to view options page.
@@ -413,9 +430,16 @@ function bp_registration_options_plugin_menu() {
 	$minimum_cap = apply_filters( 'bp_registration_filter_minimum_caps', $capability );
 
 	/* translators: %s: number of notifications */
-	$notifications = sprintf( _n( '%s notification', '%s notifications', $member_requests, 'bp-registration-options' ), number_format_i18n( $member_requests ) );
+	$notifications = sprintf(
+		_n( '%s notification', '%s notifications', $member_requests, 'bp-registration-options' ),
+		number_format_i18n( $member_requests )
+	);
 
-	$counter = sprintf( '<span class="update-plugins count-%1$d"><span class="plugin-count" aria-hidden="true">%1$d</span><span class="screen-reader-text">%2$s</span></span>', $member_requests, $notifications );
+	$counter = sprintf(
+		'<span class="update-plugins count-%1$d"><span class="plugin-count" aria-hidden="true">%1$d</span><span class="screen-reader-text">%2$s</span></span>',
+		$member_requests,
+		$notifications
+	);
 
 	add_menu_page(
 		__( 'BP Registration', 'bp-registration-options' ),
@@ -467,7 +491,9 @@ function bp_registration_options_plugin_menu() {
 		'bp_registration_options_help_support'
 	);
 	*/
+
 }
+
 add_action( 'admin_menu', 'bp_registration_options_plugin_menu' );
 
 /**
@@ -489,6 +515,7 @@ function bp_registration_options_tab_menu( $page = '' ) {
 	<?php /* <a class="nav-tab<?php if ( 'help' === $page ) { echo ' nav-tab-active'; } ?><?php // " href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options_help_support' ) ); "><?php esc_html_e( 'Help / Support', 'bp-registration-options' ); //</a> */ ?>
 	</h2>
 	<?php
+
 }
 
 /**
@@ -510,7 +537,6 @@ function bp_registration_options_settings() {
 
 	if ( ! $activate_message ) {
 		$activate_message = __( 'Your membership account is awaiting approval by the site administrator. You will not be able to fully interact with the social aspects of this website until your account is approved. Once approved or denied you will receive an email notice.', 'bp-registration-options' );
-
 		update_option( 'bprwg_activate_message', $activate_message );
 	}
 
@@ -519,7 +545,6 @@ function bp_registration_options_settings() {
 			__( 'Hi [username], your member account at %s has been approved! You can now login and start interacting with the rest of the community...', 'bp-registration-options' ),
 			get_bloginfo( 'url' )
 		);
-
 		update_option( 'bprwg_approved_message', $approved_message );
 	}
 
@@ -528,7 +553,6 @@ function bp_registration_options_settings() {
 			__( 'Hi [username], we regret to inform you that your member account at %s has been denied...', 'bp-registration-options' ),
 			get_bloginfo( 'url' )
 		);
-
 		update_option( 'bprwg_denied_message', $denied_message );
 	}
 
@@ -537,7 +561,6 @@ function bp_registration_options_settings() {
 			__( '[username] ( [user_email] ) would like to become a member of your website. To accept or reject their request, please go to %s', 'bp-registration-options' ),
 			'<a href="' . admin_url( '/admin.php?page=bp_registration_options_member_requests' ) . '">' . __( 'Member Requests', 'bp-registration-options' ) . '</a>'
 		);
-
 		update_option( 'bprwg_admin_pending_message', $admin_pending_message );
 	}
 
@@ -546,9 +569,9 @@ function bp_registration_options_settings() {
 			__( 'Hi [username], your account at %s is currently pending approval.', 'bp-registration-options' ),
 			get_bloginfo( 'url' )
 		);
-
 		update_option( 'bprwg_denied_message', $user_pending_message );
 	}
+
 	?>
 
 	<div class="wrap gensettings">
@@ -565,6 +588,7 @@ function bp_registration_options_settings() {
 			 * @since 4.2.0
 			 */
 			do_action( 'bpro_hook_before_general_settings_form' );
+
 			?>
 
 			<p>
@@ -591,12 +615,12 @@ function bp_registration_options_settings() {
 			</p>
 
 			<?php if ( bp_registration_has_users_with_ips() ) { ?>
-			<p>
-				<input type="checkbox" id="clear_ip_addresses" name="clear_ip_addresses" value="1" />
-				<label for="clear_ip_addresses">
-					<?php esc_html_e( 'GDPR compliance: Check this to remove IP addresses previously saved IP user meta on approved users.', 'bp-registration-options' ); ?>
-				</label>
-			</p>
+				<p>
+					<input type="checkbox" id="clear_ip_addresses" name="clear_ip_addresses" value="1" />
+					<label for="clear_ip_addresses">
+						<?php esc_html_e( 'GDPR compliance: Check this to remove IP addresses previously saved IP user meta on approved users.', 'bp-registration-options' ); ?>
+					</label>
+				</p>
 			<?php } ?>
 
 			<table>
@@ -670,6 +694,7 @@ function bp_registration_options_settings() {
 			 * @since 4.2.0
 			 */
 			do_action( 'bpro_hook_after_general_settings_form' );
+
 			?>
 
 			<button class="button button-primary" name="save_general" value="save_general"><?php esc_attr_e( 'Save Options', 'bp-registration-options' ); ?></button>
@@ -677,7 +702,9 @@ function bp_registration_options_settings() {
 	</div>
 
 	<?php
+
 	bp_registration_options_admin_footer();
+
 }
 
 /**
@@ -686,6 +713,7 @@ function bp_registration_options_settings() {
  * @since unknown
  */
 function bp_registration_options_member_requests() {
+
 	?>
 
 	<div class="wrap">
@@ -695,6 +723,7 @@ function bp_registration_options_member_requests() {
 		$member_requests = bp_registration_get_pending_user_count();
 
 		if ( $member_requests > 0 ) {
+
 			?>
 
 			<form method="POST" name="bprwg">
@@ -833,6 +862,7 @@ function bp_registration_options_member_requests() {
 			</p>
 
 			<?php
+
 			if ( $total_pages > 1 ) {
 				$current = ! empty( $_GET['p'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['p'] ) ) : 1;
 				echo '<p>' . esc_html__( 'Pagination: ', 'bp-registration-options' );
@@ -855,14 +885,17 @@ function bp_registration_options_member_requests() {
 			 * @since 4.2.0
 			 */
 			do_action( 'bpro_hook_after_pending_member_list' );
+
 			?>
 
 			</form>
 
 			<?php
+
 		} else {
 			echo '<p><strong>' . esc_html__( 'No new members to approve.', 'bp-registration-options' ) . '</strong></p>';
 		}
+
 		?>
 	</div> <!--End Wrap-->
 
@@ -874,6 +907,7 @@ function bp_registration_options_member_requests() {
  * Render our banned members management page
  */
 function bp_registration_options_banned() {
+
 	// NEEDS DONE.
 	?>
 	<div class="wrap">
@@ -959,23 +993,29 @@ function bp_registration_options_banned() {
 		</tfoot>
 		</table>
 		<?php
+
 	} else {
 		echo '<p><strong>' . esc_html__( 'You have no blocked IP Addresses or Email Addresses at the moment', 'bp-registration-options' ) . '</strong></p>';
 	}
-		bp_registration_options_admin_footer();
+
+	bp_registration_options_admin_footer();
+
 }
 
 /**
  * Render our help/support page
  */
 function bp_registration_options_help_support() {
+
 	// NEEDS DONE.
 	?>
 	<div class="wrap">
 		<?php bp_registration_options_tab_menu( 'help' ); ?>
 	</div>
 	<?php
+
 	bp_registration_options_admin_footer();
+
 }
 
 /**
@@ -993,6 +1033,7 @@ function bp_registration_options_admin_footer( $original = '' ) {
 	if ( ! is_object( $screen ) || 'bp_registration_options' !== $screen->parent_base ) {
 		return $original;
 	}
+
 	return sprintf(
 		__( '%1$s version %2$s by %3$s', 'bp-registration-options' ),
 		sprintf(
@@ -1015,6 +1056,7 @@ function bp_registration_options_admin_footer( $original = '' ) {
 	);
 
 }
+
 add_filter( 'admin_footer_text', 'bp_registration_options_admin_footer' );
 
 /**
@@ -1034,7 +1076,9 @@ function bp_registration_options_css() {
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '<style>' . $styles . '</style>';
 	}
+
 }
+
 add_action( 'admin_head', 'bp_registration_options_css' );
 
 /**
@@ -1043,6 +1087,7 @@ add_action( 'admin_head', 'bp_registration_options_css' );
  * @since 4.2.0
  */
 function bp_registration_options_stylesheet() {
+
 	wp_enqueue_style(
 		'bp-registration-options-stylesheet',
 		plugins_url( 'assets/bp-registration-options.css', dirname( __FILE__ ) ),
@@ -1050,7 +1095,9 @@ function bp_registration_options_stylesheet() {
 		BP_REGISTRATION_OPTIONS_VERSION,
 		'all'
 	);
+
 }
+
 add_action( 'admin_enqueue_scripts', 'bp_registration_options_stylesheet' );
 
 /**
@@ -1059,6 +1106,7 @@ add_action( 'admin_enqueue_scripts', 'bp_registration_options_stylesheet' );
  * @since unknown
  */
 function bp_registration_options_js() {
+
 	?>
 	<script language="javascript">
 		(function($) {
@@ -1090,7 +1138,9 @@ function bp_registration_options_js() {
 		})(jQuery);
 	</script>
 	<?php
+
 }
+
 add_action( 'admin_footer', 'bp_registration_options_js' );
 
 /**
@@ -1115,11 +1165,14 @@ function bp_registration_options_set_content_type( $content_type ) {
  * @return boolean
  */
 function bp_registration_options_delete_user_count_transient() {
+
 	delete_transient( 'bpro_user_count' );
 	delete_transient( 'bpro_total_user_count' );
 
 	return true;
+
 }
+
 add_action( 'deleted_user', 'bp_registration_options_delete_user_count_transient' );
 
 /**
@@ -1130,6 +1183,7 @@ add_action( 'deleted_user', 'bp_registration_options_delete_user_count_transient
  * @param int $user_id ID of the user being listed.
  */
 function bp_registration_options_ip_data( $user_id ) {
+
 	$userip   = trim( get_user_meta( $user_id, '_bprwg_ip_address', true ) );
 	$response = wp_remote_get( 'https://freegeoip.app/json/' . $userip );
 
@@ -1153,13 +1207,16 @@ function bp_registration_options_ip_data( $user_id ) {
 			</div>
 		</div>
 		<?php
+
 	} else {
+
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo wpautop( $userip );
+
 	}
-	?>
-	<?php
+
 }
+
 add_action( 'bpro_hook_member_item_additional_data', 'bp_registration_options_ip_data', 10, 1 );
 
 /**
@@ -1174,6 +1231,7 @@ add_action( 'bpro_hook_member_item_additional_data', 'bp_registration_options_ip
 function bpro_clean_user_ip( $user_id = 0 ) {
 	delete_post_meta( $user_id, '_bprwg_ip_address' );
 }
+
 add_action( 'bpro_hook_approved_user', 'bpro_clean_user_ip' );
 
 /**
@@ -1189,7 +1247,9 @@ function bp_registration_options_set_custom_edit_columns( $columns = array() ) {
 	$columns['bpro_pending'] = esc_html__( 'Pending approval', 'bp-registration-options' );
 
 	return $columns;
+
 }
+
 add_filter( 'manage_users_columns', 'bp_registration_options_set_custom_edit_columns' );
 
 /**
@@ -1205,13 +1265,17 @@ add_filter( 'manage_users_columns', 'bp_registration_options_set_custom_edit_col
  * @return string
  */
 function bp_registration_options_custom_columns( $column_output = '', $column = '', $user_id = 0 ) {
+
 	if ( 'bpro_pending' === $column ) {
 		$column_output = ( bp_registration_get_moderation_status( $user_id ) ) ?
 			esc_html__( 'Yes', 'bp-registration-options' ) :
 			esc_html__( 'No', 'bp-registration-options' );
 	}
+
 	return $column_output;
+
 }
+
 add_filter( 'manage_users_custom_column', 'bp_registration_options_custom_columns', 10, 3 );
 
 /**
@@ -1232,7 +1296,9 @@ function bp_registration_options_set_user_sort_order( $query ) {
 			$query->set( 'orderby', 'meta_value' );
 		}
 	}
+
 }
+
 add_action( 'pre_get_users', 'bp_registration_options_set_user_sort_order' );
 
 /**
@@ -1244,8 +1310,12 @@ add_action( 'pre_get_users', 'bp_registration_options_set_user_sort_order' );
  * @return array
  */
 function bp_registration_options_make_pending_status_sortable( $sortable_columns ) {
+
 	$sortable_columns['bpro_pending'] = 'bpro_pending';
+
 	return $sortable_columns;
+
 }
+
 add_filter( 'manage_users_sortable_columns', 'bp_registration_options_make_pending_status_sortable' );
 

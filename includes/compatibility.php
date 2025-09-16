@@ -16,6 +16,7 @@ class BP_Registration_Compatibility {
 	 * Piece it all together.
 	 */
 	public function __construct() {
+
 		// WP FB AutoConnect.
 		global $jfb_name;
 
@@ -28,6 +29,7 @@ class BP_Registration_Compatibility {
 
 		// Filter BuddyPress Docs capabilities.
 		add_filter( 'bp_docs_map_meta_caps', array( $this, 'bp_docs_map_meta_caps' ), 100, 4 );
+
 	}
 
 	/**
@@ -59,6 +61,7 @@ class BP_Registration_Compatibility {
 				),
 			)
 		);
+
 	}
 
 	/**
@@ -87,6 +90,7 @@ class BP_Registration_Compatibility {
 		remove_action( 'bp_member_activity_filter_options', 'bp_like_activity_filter' );
 
 		remove_action( 'bp_setup_nav', 'invite_anyone_setup_nav' );
+
 	}
 
 	/**
@@ -107,6 +111,7 @@ class BP_Registration_Compatibility {
 		}
 
 		remove_action( 'bp_setup_nav', 'invite_anyone_setup_nav' );
+
 	}
 
 	/**
@@ -140,7 +145,9 @@ class BP_Registration_Compatibility {
 		}
 
 		return $caps;
+
 	}
+
 }
 
 /**
@@ -149,6 +156,7 @@ class BP_Registration_Compatibility {
  * @since 4.3.0
  */
 function bp_registration_remove_bp_better_messages() {
+
 	if ( ! class_exists( 'BP_Better_Messages' ) ) {
 		return;
 	}
@@ -157,8 +165,8 @@ function bp_registration_remove_bp_better_messages() {
 	if ( empty( $moderate ) || ! $moderate ) {
 		return;
 	}
-	$current_user = get_current_user_id();
 
+	$current_user = get_current_user_id();
 	if ( ! bp_registration_get_moderation_status( $current_user ) ) {
 		return;
 	}
@@ -181,5 +189,7 @@ function bp_registration_remove_bp_better_messages() {
 		remove_shortcode( $tag );
 		add_shortcode( $tag, '__return_empty_string' );
 	}
+
 }
+
 add_action( 'wp_head', 'bp_registration_remove_bp_better_messages' );

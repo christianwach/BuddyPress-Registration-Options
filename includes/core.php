@@ -11,6 +11,7 @@
  * @since unknown
  */
 function bp_registration_options_bp_after_activate_content() {
+
 	$user      = get_current_user_id();
 	$user_info = get_userdata( $user );
 	$moderate  = get_option( 'bprwg_moderate' );
@@ -29,7 +30,9 @@ function bp_registration_options_bp_after_activate_content() {
 			echo '<div id="message" class="error bpro-error bpro-not-approved"><p>' . $activate_message . '</p></div>';
 		}
 	}
+
 }
+
 add_filter( 'bp_after_activate_content', 'bp_registration_options_bp_after_activate_content' );
 add_filter( 'bp_before_member_header', 'bp_registration_options_bp_after_activate_content' );
 
@@ -153,8 +156,11 @@ function bp_registration_options_bp_core_register_account( $user_id ) {
 				}
 			}
 		}
+
 	}
+
 }
+
 add_action( 'user_register', 'bp_registration_options_bp_core_register_account' );
 
 /**
@@ -166,6 +172,7 @@ add_action( 'user_register', 'bp_registration_options_bp_core_register_account' 
  * @return object Amended arguments with IDs to exclude.
  */
 function bp_registration_hide_pending_members( $args ) {
+
 	global $wpdb;
 
 	$private_network = get_option( 'bprwg_privacy_network' );
@@ -207,6 +214,7 @@ function bp_registration_hide_pending_members( $args ) {
 	return $args;
 
 }
+
 add_action( 'bp_pre_user_query_construct', 'bp_registration_hide_pending_members' );
 
 /**
@@ -234,6 +242,7 @@ function bp_registration_hide_ui() {
 	remove_action( 'bp_directory_members_actions', 'bp_member_add_friend_button' );
 
 	add_filter( 'bp_activity_can_favorite', '__return_false' );
+
 	// Hide friend buttons.
 	add_filter( 'bp_get_add_friend_button', '__return_empty_array' );
 	add_filter( 'bp_get_send_public_message_button', '__return_empty_array' );
@@ -263,7 +272,9 @@ function bp_registration_hide_ui() {
 	add_filter( 'bp_groups_admin_nav', 'bp_registration_hide_groups_adminbar' );
 
 	add_filter( 'wpmu_active_signup', 'bp_registration_filter_wpmu_active_signup' );
+
 }
+
 add_action( 'bp_ready', 'bp_registration_hide_ui' );
 
 /**
@@ -295,7 +306,9 @@ function bp_registration_hide_ui_for_approved_users() {
 	add_filter( 'bp_get_send_public_message_button', '__return_empty_array' );
 	add_filter( 'bp_get_send_message_button', '__return_false' );
 	add_filter( 'bp_get_send_message_button_args', '__return_empty_array' );
+
 }
+
 add_action( 'bp_ready', 'bp_registration_hide_ui_for_approved_users' );
 
 if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
@@ -341,13 +354,16 @@ function bp_registration_hide_whatsnew_end() {
  * @return array $items Filtered menu items.
  */
 function bp_registration_hide_messages_adminbar( $items = array() ) {
+
 	foreach ( $items as $key => $value ) {
 		if ( 'my-account-messages-compose' === $value['id'] ) {
 			unset( $items[ $key ] );
 			break;
 		}
 	}
+
 	return $items;
+
 }
 
 /**
@@ -359,13 +375,16 @@ function bp_registration_hide_messages_adminbar( $items = array() ) {
  * @return array $items Filtered menu items.
  */
 function bp_registration_hide_groups_adminbar( $items = array() ) {
+
 	foreach ( $items as $key => $value ) {
 		if ( 'my-account-groups-create' === $value['id'] ) {
 			unset( $items[ $key ] );
 			break;
 		}
 	}
+
 	return $items;
+
 }
 
 /**
@@ -389,6 +408,7 @@ function bp_registration_filter_wpmu_active_signup( $active_signup = '' ) {
  * @return array $r Amended query args.
  */
 function bp_registration_hide_widget_members( $r = array() ) {
+
 	$exclude_me = bp_registration_get_pending_users();
 
 	if ( empty( $exclude_me ) ) {
@@ -400,7 +420,6 @@ function bp_registration_hide_widget_members( $r = array() ) {
 	}
 
 	$excluded = array();
-
 	foreach ( $exclude_me as $exclude ) {
 		$excluded[] = $exclude->user_id;
 	}
@@ -413,6 +432,7 @@ function bp_registration_hide_widget_members( $r = array() ) {
 	}
 
 	return $r;
+
 }
 
 /**
@@ -506,7 +526,9 @@ function bp_registration_deny_access() {
 				}
 			}
 		}
+
 	}
+
 }
 add_action( 'template_redirect', 'bp_registration_deny_access' );
 
@@ -570,6 +592,7 @@ function bp_registration_buddypress_allowed_areas() {
 	 * @param bool $allowed Current allowed value.
 	 */
 	return apply_filters( 'bprwg_buddypress_allowed_areas', $allowed );
+
 }
 
 /**
@@ -581,12 +604,15 @@ function bp_registration_buddypress_allowed_areas() {
  * @return boolean Whether or not they're in moderation status.
  */
 function bp_registration_get_moderation_status( $user_id ) {
+
 	$moderated = get_user_meta( $user_id, '_bprwg_is_moderated', true );
 
 	if ( 'true' === $moderated ) {
 		return true;
 	}
+
 	return false;
+
 }
 
 /**
@@ -599,6 +625,7 @@ function bp_registration_get_moderation_status( $user_id ) {
  * @return int Meta row ID that got updated.
  */
 function bp_registration_set_moderation_status( $user_id = 0, $status = 'true' ) {
+
 	$user = get_userdata( $user_id );
 
 	if ( ! $user ) {
@@ -607,6 +634,7 @@ function bp_registration_set_moderation_status( $user_id = 0, $status = 'true' )
 
 	delete_user_meta( $user_id, '_bprwg_is_moderated' );
 	return update_user_meta( absint( $user_id ), '_bprwg_is_moderated', $status );
+
 }
 
 /**
@@ -636,6 +664,7 @@ function bp_registration_options_send_admin_email( $args = array() ) {
 	 * @param array $value Array of email addresses to send notification to.
 	 */
 	$admin_email = apply_filters( 'bprwg_admin_email_addresses', array( get_bloginfo( 'admin_email' ) ) );
+
 	/** This filter is documented in includes/core.php */
 	$admin_notifications = apply_filters( 'bprwg_bp_notification_users', get_users( 'role=administrator' ) );
 
@@ -663,6 +692,7 @@ function bp_registration_options_send_admin_email( $args = array() ) {
 	wp_mail( $admin_email, __( 'New Member Request', 'bp-registration-options' ), $mod_email );
 
 	remove_filter( 'wp_mail_content_type', 'bp_registration_options_set_content_type' );
+
 }
 
 /**
@@ -698,6 +728,7 @@ function bp_registration_options_send_pending_user_email( $args = array() ) {
 	wp_mail( $args['user_email'], __( 'Pending Membership', 'bp-registration-options' ), bp_registration_process_email_message( $args['message'], true, 'user_pending', $args['user_id'] ) );
 
 	remove_filter( 'wp_mail_content_type', 'bp_registration_options_set_content_type' );
+
 }
 
 /**
@@ -706,10 +737,13 @@ function bp_registration_options_send_pending_user_email( $args = array() ) {
  * @since 4.2.3
  */
 function bp_registration_options_remove_compose_message() {
+
 	if ( function_exists( 'bp_core_remove_subnav_item' ) && true === bp_registration_get_moderation_status( get_current_user_id() ) ) {
 		bp_core_remove_subnav_item( 'messages', 'compose' );
 	}
+
 }
+
 add_action( 'bp_setup_nav', 'bp_registration_options_remove_compose_message' );
 
 /**
@@ -749,6 +783,7 @@ function bp_registration_options_remove_moderated_count( $count ) {
 	return ( $final_count > 0 ) ? $final_count : $count;
 
 }
+
 add_filter( 'bp_get_total_member_count', 'bp_registration_options_remove_moderated_count' );
 
 /**
@@ -759,6 +794,7 @@ add_filter( 'bp_get_total_member_count', 'bp_registration_options_remove_moderat
  * @return bool
  */
 function bp_registration_options_admin_bar_add() {
+
 	global $wp_admin_bar, $bp;
 
 	if ( ! current_user_can( 'delete_users' ) ) {
@@ -798,7 +834,9 @@ function bp_registration_options_admin_bar_add() {
 	);
 
 	return true;
+
 }
+
 add_action( 'bp_setup_admin_bar', 'bp_registration_options_admin_bar_add', 300 );
 
 /**
@@ -809,10 +847,13 @@ add_action( 'bp_setup_admin_bar', 'bp_registration_options_admin_bar_add', 300 )
  * @param BP_Activity_Activity $args Array of arguments for activity item.
  */
 function bp_registration_options_prevent_activity_posting( $args ) {
+
 	if ( true === bp_registration_get_moderation_status( $args->user_id ) && 'new_member' === $args->type ) {
 		$args->type = '';
 	}
+
 }
+
 add_action( 'bp_activity_before_save', 'bp_registration_options_prevent_activity_posting' );
 
 /**
@@ -823,6 +864,7 @@ add_action( 'bp_activity_before_save', 'bp_registration_options_prevent_activity
  * @param int $user_id ID of the approved user.
  */
 function bp_registration_options_display_activity_posting( $user_id ) {
+
 	if ( ! function_exists( 'bp_is_active' ) ) {
 		return;
 	}
@@ -836,7 +878,9 @@ function bp_registration_options_display_activity_posting( $user_id ) {
 			)
 		);
 	}
+
 }
+
 add_action( 'bpro_hook_approved_user', 'bp_registration_options_display_activity_posting' );
 
 /**
@@ -848,6 +892,7 @@ add_action( 'bpro_hook_approved_user', 'bp_registration_options_display_activity
  * @return array $component_names Array of updated component names.
  */
 function bp_registration_options_get_registered_components( $component_names = array() ) {
+
 	// Force $component_names to be an array.
 	if ( ! is_array( $component_names ) ) {
 		$component_names = array();
@@ -856,7 +901,9 @@ function bp_registration_options_get_registered_components( $component_names = a
 	array_push( $component_names, 'bp_registration_options' );
 
 	return $component_names;
+
 }
+
 add_filter( 'bp_notifications_get_registered_components', 'bp_registration_options_get_registered_components' );
 
 /**
@@ -903,6 +950,7 @@ function bprwg_notifications( $action, $item_id, $secondary_item_id, $total_item
 	return $result;
 
 }
+
 add_filter( 'bp_notifications_get_notifications_for_user', 'bprwg_notifications', 11, 7 );
 
 /**
@@ -943,7 +991,9 @@ function bp_registration_options_notify_pending_user( $user_id, $key, $user ) {
 			)
 		);
 	}
+
 }
+
 add_action( 'bp_core_activated_user', 'bp_registration_options_notify_pending_user', 10, 3 );
 
 /**
@@ -956,6 +1006,7 @@ add_action( 'bp_core_activated_user', 'bp_registration_options_notify_pending_us
  * @return array $recipients The modified array of message recipients.
  */
 function bp_registration_prevent_messaging_unapproved_members( $recipients, $orig_post = '' ) {
+
 	foreach ( $recipients as $key => $recipient ) {
 		$user = get_user_by( 'login', $recipient );
 		if ( $user instanceof WP_User ) {
@@ -966,7 +1017,9 @@ function bp_registration_prevent_messaging_unapproved_members( $recipients, $ori
 	}
 
 	return $recipients;
+
 }
+
 add_filter( 'bp_messages_recipients', 'bp_registration_prevent_messaging_unapproved_members', 10, 2 );
 
 /**
@@ -997,4 +1050,5 @@ function bpro_nouveau_friend_button_hide( $button_args ) {
 	return $button_args;
 
 }
+
 add_filter( 'bp_get_add_friend_button', 'bpro_nouveau_friend_button_hide', 101, 1 );
