@@ -726,14 +726,6 @@ add_filter( 'bp_get_total_member_count', 'bp_registration_options_remove_moderat
 function bp_registration_options_admin_bar_add() {
 	global $wp_admin_bar, $bp;
 
-	if ( ! function_exists( 'bp_use_wp_admin_bar' ) ) {
-		return false;
-	}
-
-	if ( ! bp_use_wp_admin_bar() || defined( 'DOING_AJAX' ) ) {
-		return false;
-	}
-
 	if ( ! current_user_can( 'delete_users' ) ) {
 		return false;
 	}
