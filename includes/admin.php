@@ -947,32 +947,30 @@ function bp_registration_options_help_support() {
  */
 function bp_registration_options_admin_footer( $original = '' ) {
 
-	$screen = get_current_screen();
-	if ( ! is_object( $screen ) || 'bp_registration_options' != $screen->parent_base ) {
-		return $original;
-	}
-	return sprintf(
-		__( '%s version %s by %s', 'bp-registration-options' ),
-		sprintf(
-			'<a target="_blank" href="https://wordpress.org/support/plugin/bp-registration-options">%s</a>',
-			__( 'BP Registration Options', 'bp-registration-options' )
-		),
-		BP_REGISTRATION_OPTIONS_VERSION,
-		'<a href="http://webdevstudios.com" target="_blank">WebDevStudios</a>'
-	).
-	' - '.
-	sprintf(
-		'<a href="https://github.com/WebDevStudios/BuddyPress-Registration-Options/issues" target="_blank">%s</a>',
-		__( 'Please Report Bugs', 'bp-registration-options' )
-	).
-	' '.
-	__( 'Follow on Twitter:', 'bp-registration-options' ).
-	sprintf(
-		' %s &middot; %s &middot; %s',
-		'<a href="http://twitter.com/tw2113" target="_blank">Michael</a>',
-		'<a href="http://twitter.com/bmess" target="_blank">Brian</a>',
-		'<a href="http://twitter.com/webdevstudios" target="_blank">WebDevStudios</a>'
-	);
+    $screen = get_current_screen();
+    if ( ! is_object( $screen ) || 'bp_registration_options' != $screen->parent_base ) {
+        return $original;
+    }
+    return sprintf(
+        __( '%s version %s by %s', 'bp-registration-options' ),
+        sprintf(
+            '<a target="_blank" href="https://wordpress.org/support/plugin/bp-registration-options">%s</a>',
+            __( 'BP Registration Options', 'bp-registration-options' )
+        ),
+        BP_REGISTRATION_OPTIONS_VERSION,
+        '<a href="https://apppresser.com/" target="_blank">AppPresser</a>'
+    ).
+    ' - '.
+    sprintf(
+        '<a href="https://wordpress.org/support/plugin/bp-registration-options" target="_blank">%s</a>',
+        __( 'Please Report Bugs', 'bp-registration-options' )
+    ).
+    ' '.
+    __( 'Follow on Twitter:', 'bp-registration-options' ).
+    sprintf(
+        ' %s',
+        '<a href="http://twitter.com/bmess" target="_blank">Brian</a>',
+    );
 
 }
 add_filter( 'admin_footer_text', 'bp_registration_options_admin_footer' );

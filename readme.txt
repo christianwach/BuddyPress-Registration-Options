@@ -1,10 +1,9 @@
-=== BuddyPress Registration Options ===
-Contributors: webdevstudios, pluginize, tw2113, Messenlehner
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3084056
+=== Registration Options for BuddyPress ===
+Contributors: messenlehner
 Tags: buddypress, plugin, admin, moderation, registration, groups, blogs, new members, buddypress private network, buddypress spam
 Requires at least: 5.2
 Tested up to: 6.0.1
-Stable tag: 4.4.2
+Stable tag: 4.5.0
 Requires PHP: 5.6
 License: GPLv2
 
@@ -21,12 +20,6 @@ Requires BuddyPress version 1.7 or higher and bbPress 2.0 or higher.
 === General Data Protection Regulation ===
 BuddyPress Registration Options temporarily stores user IP addresses as user meta to help validate and vet pending users. Saved IP values are deleted upon both approval and denial of pending user. No other personal data is recorded.
 
-=== Development ===
-
-Follow along with development on GitHub at [BuddyPress-Registration-Options](https://github.com/WebDevStudios/BuddyPress-Registration-Options)
-
-[Pluginize](https://pluginize.com/?utm_source=buddypress-registration-op&utm_medium=text&utm_campaign=wporg) was launched in 2016 by [WebDevStudios](https://webdevstudios.com/) to promote, support, and house all of their [WordPress products](https://pluginize.com/shop/?utm_source=buddypress-registration-op&utm_medium=text&utm_campaign=wporg). Pluginize is dedicated to [creating products that make your BuddyPress site](https://pluginize.com/product-category/buddypress/) easy to manage, without having to touch a line of code. Pluginize also provides ongoing support and development for WordPress community favorites like [CPTUI](https://wordpress.org/plugins/custom-post-type-ui/), [CMB2](https://wordpress.org/plugins/cmb2/), and more.
-
 == Screenshots ==
 
 1. General Settings page:
@@ -37,6 +30,15 @@ Follow along with development on GitHub at [BuddyPress-Registration-Options](htt
 6. Approve, deny or ban new members:
 
 == Changelog ==
+
+= 4.4.5 =
+* Fix: Rename plugin per plugin repository guidleines.
+
+= 4.4.4 =
+* Fix: Errors around missing function in the admin screen.
+
+= 4.4.3 =
+* Debranding of plugin and revising contributor list. Functionality remains untouched from 4.4.2
 
 = 4.4.2 - 2022-07-19 =
 * Fixed: Prevent fatal errors with `bp_nouveau` function.
@@ -118,6 +120,12 @@ Follow along with development on GitHub at [BuddyPress-Registration-Options](htt
 * Updated: Internationalization strings for default messages.
 
 == Upgrade Notice ==
+
+= 4.4.4 =
+* Fix: Errors around missing function in the admin screen.
+
+= 4.4.3 =
+* Debranding of plugin and revising contributor list.
 
 = 4.4.2 - 2022-07-19 =
 * Fixed: Prevent fatal errors with `bp_nouveau` function.
