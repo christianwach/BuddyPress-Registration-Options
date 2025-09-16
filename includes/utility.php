@@ -2,7 +2,7 @@
 /**
  * BP-Registration-Options utility functions.
  *
- * @package BP-Registration-Options
+ * @package BP_Registration_Options
  */
 
 /**

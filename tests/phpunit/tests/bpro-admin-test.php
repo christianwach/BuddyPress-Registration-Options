@@ -2,7 +2,7 @@
 /**
  * BP Registration Options Tests
  *
- * @package BP-Registration-Options-Tests
+ * @package BP_Registration_Options-Tests
  */
 
 /**

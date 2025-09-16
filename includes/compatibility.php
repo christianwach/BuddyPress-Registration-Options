@@ -2,7 +2,7 @@
 /**
  * Compatibility fixes for various other BuddyPress related plugins.
 
- * @package BP-Registration-Options
+ * @package BP_Registration_Options
  */
 
 /**
