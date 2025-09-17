@@ -5,6 +5,9 @@
  * @package BP_Registration_Options
  */
 
+// Exit if accessed directly.
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Display pending message to users until they're activated.
  *

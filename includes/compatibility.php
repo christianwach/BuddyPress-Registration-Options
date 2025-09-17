@@ -5,6 +5,9 @@
  * @package BP_Registration_Options
  */
 
+// Exit if accessed directly.
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Class BP_Registration_Compatibility
  *

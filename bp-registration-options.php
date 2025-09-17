@@ -20,7 +20,7 @@
  */
 
 // Exit if accessed directly.
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
 // Set our version here.
 define( 'BP_REGISTRATION_OPTIONS_VERSION', '4.5.0a' );
@@ -163,7 +163,7 @@ class BP_Registration_Options {
 	}
 
 	/**
-	 * Load our textdomain
+	 * Load our textdomain.
 	 *
 	 * @since unknown
 	 */

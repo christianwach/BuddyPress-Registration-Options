@@ -5,6 +5,9 @@
  * @package BP_Registration_Options
  */
 
+// Exit if accessed directly.
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Get a count of our pending users
  *
