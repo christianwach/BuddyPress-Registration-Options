@@ -373,38 +373,50 @@ add_action( 'admin_init', 'bp_registration_options_form_actions' );
  */
 function bp_registration_options_admin_messages() {
 
-	$member_requests = bp_registration_get_pending_user_count();
-
-	if ( $member_requests > 0 && isset( $_GET['page'] ) !== 'bp_registration_options_member_requests' && current_user_can( 'add_users' ) ) {
-
-		$message = '<div class="error"><p>';
-
-		$message .= sprintf(
-			_n(
-				'You have %d new member request that needs to be approved or denied.',
-				'You have %d new member requests that needs to be approved or denied.',
-				$member_requests,
-				'bp-registration-options'
-			),
-			$member_requests
-		);
-
-		$message .= ' ' . sprintf(
-			/* translators: placeholder will have linked "click here" that goes to requests page. */
-			esc_html__( 'Please %s to take action', 'bp-registration-options' ),
-			sprintf(
-				'<a href="%s">%s</a>',
-				admin_url( '/admin.php?page=bp_registration_options_member_requests' ),
-				esc_html__( 'click here', 'bp-registration-options' )
-			)
-		);
-
-		$message .= '</p></div>';
-
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo $message;
-
+	// Bail on Member Requests screen.
+	$screen = get_current_screen();
+	if ( false !== strpos( $screen->id, 'bp_registration_options_member_requests' ) ) {
+		return;
 	}
+
+	// Bail if User doesn't have appropriate cap.
+	if ( ! current_user_can( 'add_users' ) ) {
+		return;
+	}
+
+	// Bail if there are no member requests.
+	$member_requests = bp_registration_get_pending_user_count();
+	if ( empty( $member_requests ) ) {
+		return;
+	}
+
+	$message = '<div class="error"><p>';
+
+	$message .= sprintf(
+		/* translators: %d: Number of member requests. */
+		_n(
+			'You have %d new member request that needs to be approved or denied.',
+			'You have %d new member requests that need to be approved or denied.',
+			$member_requests,
+			'bp-registration-options'
+		),
+		$member_requests
+	);
+
+	$message .= ' ' . sprintf(
+		/* translators: placeholder will have linked "click here" that goes to requests page. */
+		esc_html__( 'Please %s to take action.', 'bp-registration-options' ),
+		sprintf(
+			'<a href="%s">%s</a>',
+			admin_url( '/admin.php?page=bp_registration_options_member_requests' ),
+			esc_html__( 'click here', 'bp-registration-options' )
+		)
+	);
+
+	$message .= '</p></div>';
+
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo $message;
 
 }
 
@@ -721,6 +733,7 @@ function bp_registration_options_member_requests() {
 
 	<div class="wrap">
 		<?php
+
 		bp_registration_options_tab_menu( 'requests' );
 
 		$member_requests = bp_registration_get_pending_user_count();
@@ -740,128 +753,141 @@ function bp_registration_options_member_requests() {
 			do_action( 'bpro_hook_before_pending_member_list' );
 
 			wp_nonce_field( 'bp_reg_options_check' );
+
 			?>
 
 			<p><?php esc_html_e( 'Please approve or deny the following new members:', 'bp-registration-options' ); ?></p>
 
-			<table class="widefat">
-			<thead>
-				<tr>
-					<th id="cb" class="manage-column column-cb check-column" scope="col">
-						<label><input type="checkbox" id="bp_checkall_top" name="checkall" /></label>
-					</th>
-					<th><?php esc_html_e( 'Photo', 'bp-registration-options' ); ?></th>
-					<th><?php esc_html_e( 'Name', 'bp-registration-options' ); ?></th>
-					<th><?php esc_html_e( 'Email', 'bp-registration-options' ); ?></th>
-					<th><?php esc_html_e( 'Created', 'bp-registration-options' ); ?></th>
-					<th><?php esc_html_e( 'Additional Data', 'bp-registration-options' ); ?></th>
-				</tr>
-			</thead>
-			<?php
-
-			$odd = true;
-
-			// Get paged value, determine total pages, and calculate start_from value for offset.
-			$page        = isset( $_GET['p'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['p'] ) ) : 1;
-			$total_pages = ceil( $member_requests / 20 ); // TODO: Test pagination.
-			$start_from  = ( $page - 1 ) * 20;
-
-			$pending_users = bp_registration_get_pending_users( $start_from );
-
-			foreach ( $pending_users as $pending ) {
-				if ( class_exists( 'BP_Core_User' ) ) {
-					$user = new BP_Core_User( $pending->user_id );
-				}
-
-				$user_data = get_userdata( $pending->user_id );
-
-				if ( $odd ) {
-					?>
-					<tr class="alternate">
-					<?php
-					$odd = false;
-				} else {
-					?>
+			<table class="wp-list-table widefat striped">
+				<thead>
 					<tr>
+						<td id="cb" class="manage-column column-cb check-column" scope="col">
+							<input type="checkbox" id="bp_checkall_top" name="checkall" />
+							<label for="bp_checkall_top"><span class="screen-reader-text"><?php esc_html_e( 'Select all', 'bp-registration-options' ); ?></span></label>
+						</td>
+						<th scope="col" id="name" class="manage-column column-name column-photo"><?php esc_html_e( 'Photo', 'bp-registration-options' ); ?></th>
+						<th scope="col" id="name" class="manage-column column-name column-name"><?php esc_html_e( 'Name', 'bp-registration-options' ); ?></th>
+						<th scope="col" id="name" class="manage-column column-name column-email"><?php esc_html_e( 'Email', 'bp-registration-options' ); ?></th>
+						<th scope="col" id="name" class="manage-column column-name column-created"><?php esc_html_e( 'Created', 'bp-registration-options' ); ?></th>
+						<th scope="col" id="name" class="manage-column column-name column-data"><?php esc_html_e( 'Additional Data', 'bp-registration-options' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
 					<?php
+
 					$odd = true;
-				}
-				?>
-					<th class="check-column" scope="row">
-						<label><input type="checkbox" class="bpro_checkbox" id="bp_member_check_<?php echo esc_attr( $pending->user_id ); ?>" name="bp_member_check[]" value="<?php echo esc_attr( $pending->user_id ); ?>"  /></label>
-					</th>
-					<td>
-						<?php if ( isset( $user ) ) { ?>
-							<a target="_blank" href="<?php echo esc_attr( $user->user_url ); ?>">
-								<?php echo $user->avatar_mini; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
-							</a>
-						<?php } ?>
-					</td>
-					<td>
-						<?php if ( isset( $user ) ) { ?>
-							<strong><a target="_blank" href="<?php echo esc_attr( $user->user_url ); ?>">
-								<?php
-								if ( ! empty( $user->fullname ) ) {
-									echo esc_html( $user->fullname );
+
+					// Get paged value, determine total pages, and calculate start_from value for offset.
+					$page        = isset( $_GET['p'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['p'] ) ) : 1;
+					$total_pages = ceil( $member_requests / 20 ); // TODO: Test pagination.
+					$start_from  = ( $page - 1 ) * 20;
+
+					$pending_users = bp_registration_get_pending_users( $start_from );
+
+					foreach ( $pending_users as $pending ) {
+
+						if ( class_exists( 'BP_Core_User' ) ) {
+							$user = new BP_Core_User( $pending->user_id );
+						}
+
+						$user_data = get_userdata( $pending->user_id );
+
+						if ( $odd ) {
+							?>
+							<tr class="alternate">
+							<?php
+							$odd = false;
+						} else {
+							?>
+							<tr>
+							<?php
+							$odd = true;
+						}
+
+						?>
+							<th scope="row" class="check-column">
+								<label class="label-covers-full-cell" for="checkbox_03a20bf35280d980731c0f7254da655c"><span class="screen-reader-text"><?php esc_html_e( 'Select member', 'bp-registration-options' ); ?></span></label>
+								<input type="checkbox" class="bpro_checkbox" id="bp_member_check_<?php echo esc_attr( $pending->user_id ); ?>" name="bp_member_check[]" value="<?php echo esc_attr( $pending->user_id ); ?>" />
+							</th>
+							<td>
+								<?php if ( isset( $user ) ) { ?>
+									<a target="_blank" href="<?php echo esc_attr( $user->user_url ); ?>">
+										<?php echo $user->avatar_mini; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
+									</a>
+								<?php } ?>
+							</td>
+							<td>
+								<?php if ( isset( $user ) ) { ?>
+									<strong><a target="_blank" href="<?php echo esc_attr( $user->user_url ); ?>">
+										<?php
+										if ( ! empty( $user->fullname ) ) {
+											echo esc_html( $user->fullname );
+										} else {
+											echo esc_html( $user->profile_data['user_login'] );
+										}
+										?>
+									</a></strong>
+									<?php
 								} else {
-									echo esc_html( $user->profile_data['user_login'] );
+									echo esc_html( $user_data->user_login );
 								}
 								?>
-							</a></strong>
-							<?php
-						} else {
-							echo esc_html( $user_data->user_login );
-						}
-						?>
-					</td>
-					<td>
-						<a href="mailto:<?php echo esc_attr( $user_data->data->user_email ); ?>">
-							<?php echo esc_html( $user_data->data->user_email ); ?>
-						</a>
-					</td>
-					<td>
-						<?php echo $user_data->data->user_registered; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
-					</td>
-					<td>
+							</td>
+							<td>
+								<a href="mailto:<?php echo esc_attr( $user_data->data->user_email ); ?>">
+									<?php echo esc_html( $user_data->data->user_email ); ?>
+								</a>
+							</td>
+							<td>
+								<?php echo $user_data->data->user_registered; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
+							</td>
+							<td>
+								<?php
+
+								/**
+								 * Fires in the last table cell in pending member list.
+								 *
+								 * @since 4.3.0
+								 *
+								 * @param int $value Pending user ID.
+								 */
+								do_action( 'bpro_hook_member_item_additional_data', $pending->user_id );
+
+								?>
+							</td>
+						</tr>
 						<?php
 
 						/**
-						 * Fires in the last table cell in pending member list.
+						 * Fires after an individual pending member table row item.
 						 *
 						 * @since 4.3.0
-						 *
-						 * @param int $value Pending user ID.
 						 */
-						do_action( 'bpro_hook_member_item_additional_data', $pending->user_id );
-						?>
-					</td>
-				</tr>
-				<?php
+						do_action( 'bpro_hook_after_pending_member_list_item' );
 
-					/**
-					 * Fires after an individual pending member table row item.
-					 *
-					 * @since 4.3.0
-					 */
-					do_action( 'bpro_hook_after_pending_member_list_item' );
-			}
-			?>
-			<tfoot>
-				<tr>
-					<th class="manage-column column-cb check-column" scope="col"><label><input type="checkbox" id="bp_checkall_bottom" name="checkall" /></label></th>
-					<th><?php esc_html_e( 'Photo', 'bp-registration-options' ); ?></th>
-					<th><?php esc_html_e( 'Name', 'bp-registration-options' ); ?></th>
-					<th><?php esc_html_e( 'Email', 'bp-registration-options' ); ?></th>
-					<th><?php esc_html_e( 'Created', 'bp-registration-options' ); ?></th>
-					<th><?php esc_html_e( 'Additional Data', 'bp-registration-options' ); ?></th>
-				</tr>
-			</tfoot>
+					}
+
+					?>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td class="manage-column column-cb check-column" scope="col">
+							<input type="checkbox" id="bp_checkall_bottom" name="checkall" />
+							<label for="bp_checkall_bottom"><span class="screen-reader-text"><?php esc_html_e( 'Select all', 'bp-registration-options' ); ?></span></label>
+						</td>
+						<th scope="col" id="name" class="manage-column column-name column-photo"><?php esc_html_e( 'Photo', 'bp-registration-options' ); ?></th>
+						<th scope="col" id="name" class="manage-column column-name column-name"><?php esc_html_e( 'Name', 'bp-registration-options' ); ?></th>
+						<th scope="col" id="name" class="manage-column column-name column-email"><?php esc_html_e( 'Email', 'bp-registration-options' ); ?></th>
+						<th scope="col" id="name" class="manage-column column-name column-created"><?php esc_html_e( 'Created', 'bp-registration-options' ); ?></th>
+						<th scope="col" id="name" class="manage-column column-name column-data"><?php esc_html_e( 'Additional Data', 'bp-registration-options' ); ?></th>
+					</tr>
+				</tfoot>
 			</table>
 
 			<p>
-			<button class="button button-primary" name="moderate" value="approve" id="bpro_approve"><?php esc_html_e( 'Approve', 'bp-registration-options' ); ?></button>
-			<button class="button button-secondary" name="moderate" value="deny" id="bpro_deny"><?php esc_html_e( 'Deny', 'bp-registration-options' ); ?></button>
-			<?php /*<button class="button button-secondary" name="moderate" value="ban" id="bpro_ban" disabled><?php esc_html_e( 'Ban', 'bp-registration-options' ); </button> */ ?>
+				<button class="button button-primary" name="moderate" value="approve" id="bpro_approve"><?php esc_html_e( 'Approve', 'bp-registration-options' ); ?></button>
+				<button class="button button-secondary" name="moderate" value="deny" id="bpro_deny"><?php esc_html_e( 'Deny', 'bp-registration-options' ); ?></button>
+				<?php /*<button class="button button-secondary" name="moderate" value="ban" id="bpro_ban" disabled><?php esc_html_e( 'Ban', 'bp-registration-options' ); </button> */ ?>
 			</p>
 
 			<?php
@@ -900,14 +926,14 @@ function bp_registration_options_member_requests() {
 		}
 
 		?>
-	</div> <!--End Wrap-->
+	</div><!-- /.wrap -->
 
 	<?php
 	bp_registration_options_admin_footer();
 }
 
 /**
- * Render our banned members management page
+ * Render our banned members management page.
  */
 function bp_registration_options_banned() {
 
