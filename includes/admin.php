@@ -457,8 +457,8 @@ function bp_registration_options_plugin_menu() {
 	);
 
 	add_menu_page(
-		__( 'BP Registration', 'bp-registration-options' ),
-		__( 'BP Registration', 'bp-registration-options' ) . $counter,
+		__( 'Registration Options for BuddyPress', 'bp-registration-options' ),
+		__( 'Registration', 'bp-registration-options' ) . $counter,
 		$minimum_cap,
 		'bp_registration_options',
 		'bp_registration_options_settings',
@@ -467,8 +467,8 @@ function bp_registration_options_plugin_menu() {
 
 	add_submenu_page(
 		'bp_registration_options',
-		__( 'BP Registration ', 'bp-registration-options' ),
-		__( 'BP Registration ', 'bp-registration-options' ),
+		__( 'Settings', 'bp-registration-options' ),
+		__( 'Settings', 'bp-registration-options' ),
 		$minimum_cap,
 		'bp_registration_options',
 		'bp_registration_options_settings'
@@ -476,8 +476,8 @@ function bp_registration_options_plugin_menu() {
 
 	add_submenu_page(
 		'bp_registration_options',
-		__( 'Member Requests ', 'bp-registration-options' ) . $member_requests,
-		__( 'Member Requests ', 'bp-registration-options' ) . $counter,
+		__( 'Member Requests', 'bp-registration-options' ),
+		__( 'Member Requests', 'bp-registration-options' ) . $counter,
 		$minimum_cap,
 		'bp_registration_options_member_requests',
 		'bp_registration_options_member_requests'
@@ -522,7 +522,7 @@ function bp_registration_options_tab_menu( $page = '' ) {
 
 	$member_requests = bp_registration_get_pending_user_count(); ?>
 
-	<h1><?php esc_html_e( 'BP Registration Options', 'bp-registration-options' ); ?></h1>
+	<h1><?php esc_html_e( 'Registration Options for BuddyPress', 'bp-registration-options' ); ?></h1>
 	<h2 class="nav-tab-wrapper">
 	<a class="nav-tab<?php echo empty( $page ) ? ' nav-tab-active' : ''; ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options' ) ); ?>"><?php esc_html_e( 'General Settings', 'bp-registration-options' ); ?></a>
 	<a class="nav-tab<?php echo esc_attr( ( 'requests' === $page ) ? ' nav-tab-active' : '' ); ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=bp_registration_options_member_requests' ) ); ?>"><?php esc_html_e( 'Member Requests', 'bp-registration-options' ); ?> (<?php echo esc_html( $member_requests ); ?>)</a>
