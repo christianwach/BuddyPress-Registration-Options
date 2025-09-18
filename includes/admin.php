@@ -1093,7 +1093,7 @@ function bp_registration_options_stylesheet() {
 
 	wp_enqueue_style(
 		'bp-registration-options-stylesheet',
-		plugins_url( 'assets/bp-registration-options.css', dirname( __FILE__ ) ),
+		plugins_url( 'assets/css/bp-registration-options.css', BP_REGISTRATION_OPTIONS_FILE ),
 		array(),
 		BP_REGISTRATION_OPTIONS_VERSION,
 		'all'

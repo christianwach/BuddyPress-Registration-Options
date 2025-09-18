@@ -20,14 +20,14 @@ class bpro_files_test extends WP_UnitTestCase {
 
 		// Base directory.
 		$this->assertTrue( file_exists( $dir . 'bp-registration-options.php' ) );
-		$this->assertTrue( file_exists( $dir . 'loader.php' ) );
 
 		// Includes folder.
 		$this->assertTrue( file_exists( $dir . 'includes/admin.php' ) );
 		$this->assertTrue( file_exists( $dir . 'includes/compatibility.php' ) );
 		$this->assertTrue( file_exists( $dir . 'includes/core.php' ) );
+		$this->assertTrue( file_exists( $dir . 'includes/utility.php' ) );
 
 		// Assets.
-		$this->assertTrue( file_exists( $dir . 'assets/bp-registration-options.css' ) );
+		$this->assertTrue( file_exists( $dir . 'assets/css/bp-registration-options.css' ) );
 	}
 }

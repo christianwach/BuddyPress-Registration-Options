@@ -169,10 +169,12 @@ class BP_Registration_Options {
 	 */
 	public function load_textdomain() {
 
+		// Load translations.
+		// phpcs:ignore WordPress.WP.DeprecatedParameters.Load_plugin_textdomainParam2Found
 		load_plugin_textdomain(
-			'bp-registration-options',
-			false,
-			basename( dirname( __FILE__ ) ) . '/languages/'
+			'bp-registration-options', // Unique name.
+			false, // Deprecated argument.
+			dirname( plugin_basename( BP_REGISTRATION_OPTIONS_FILE ) ) . '/languages/' // Relative path to directory.
 		);
 
 	}
